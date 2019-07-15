@@ -1,3 +1,5 @@
+require 'resque/server'
+
 Rails.application.routes.draw do
   # This line mounts Spree's routes at the root of your application.
   # This means, any requests to URLs such as /products, will go to
@@ -9,4 +11,7 @@ Rails.application.routes.draw do
   # the default of "spree".
   mount Spree::Core::Engine, at: '/'
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+
+  # Resque admin panel
+  mount Resque::Server => '/resque'
 end
