@@ -55,6 +55,8 @@ end
 group :test do
   gem 'rspec'
   gem 'rspec-rails'
+  gem 'rails-controller-testing'
+  gem 'ffaker'
   gem 'webmock', '>= 1.9.0'
   gem 'mock_redis', '~> 0.17.3'
   gem 'factory_bot_rails', '~> 4.8'

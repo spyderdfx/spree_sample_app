@@ -15,3 +15,11 @@ Rails.application.routes.draw do
   # Resque admin panel
   mount Resque::Server => '/resque'
 end
+
+Spree::Core::Engine.routes.draw do
+  namespace :admin, path: Spree.admin_path do
+    resource :imports, only: %i(show) do
+      post :upload
+    end
+  end
+end

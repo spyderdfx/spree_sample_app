@@ -31,3 +31,13 @@
 
 en:
   hello: "Hello world"
+
+  controllers:
+    admin:
+      imports:
+        success: 'Import started'
+
+  views:
+    admin:
+      imports:
+        submit_csv: 'Upload csv and start import'

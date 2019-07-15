@@ -16,3 +16,6 @@ Spree.config do |config|
 end
 
 Spree.user_class = "Spree::LegacyUser"
+
+# TODO: maybe it will work someday
+# Spree::BackendConfiguration::PRODUCT_TABS << :imports
