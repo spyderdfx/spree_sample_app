@@ -50,7 +50,7 @@ module TestApp
         product = Spree::Product.new
         product.assign_attributes(row.to_h.slice(*PRODUCT_ATTRIBUTES))
 
-        product.taxons << taxon(row['category'])
+        product.taxons << Spree::Taxon.find_or_create_by!(name: row['category'])
         product.available_on = row['availability_date']
         product.shipping_category = shipping_category
 
@@ -59,26 +59,6 @@ module TestApp
         stock_location.stock_item(product.master).count_on_hand = row['stock_total'].to_i
         stock_location.save!
       end
-    end
-
-    # Private: finds or creates taxon by name, and memoizes it
-    #
-    # name - String, taxon's name
-    #
-    # Returns Spree::Taxon instance
-    def taxon(name)
-      taxon = @taxons['name']
-
-      return taxon if taxon.present?
-
-      taxon = Spree::Taxon.where(name: name).first
-
-      if taxon.present?
-        @taxons[name] = taxon
-        return taxon
-      end
-
-      Spree::Taxon.new(name: name)
     end
 
     # Private: default stock location
