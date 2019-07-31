@@ -2,8 +2,8 @@ module TestApp
   class ImportJob
     @queue = :import
 
-    def self.perform(filename)
-      TestApp::ImportService.new(filename).call
+    def self.perform(import_id)
+      TestApp::ImportService.new(import_id.to_i).call
     end
   end
 end

@@ -36,6 +36,10 @@ gem 'redis', '~> 3.0'
 gem 'resque', '~> 1.26'
 gem 'resque-web'
 
+# File upload
+gem 'paperclip', '~> 5.2.0'
+gem 'aws-sdk', '< 3'
+
 gem 'spree', '~> 3.4.0'
 gem 'spree_auth_devise', '~> 3.3'
 gem 'spree_gateway', '~> 3.3'

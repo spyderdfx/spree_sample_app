@@ -50,9 +50,29 @@ RSpec.describe Spree::Admin::ImportsController, type: :controller do
     let(:file) { fixture_file_upload(Rails.root.join('spec/fixtures/sample.csv')) }
     let(:path) { Rails.root.join('public', 'files', 'import', 'sample.csv') }
 
-    let(:request) { post :upload, params: {csv: file} }
+    let(:request) { post :upload, params: {import: {file: file}} }
 
-    before { allow(Resque).to receive(:enqueue) }
+    before do
+      allow(Resque).to receive(:enqueue)
+
+      Aws.config[:s3] = {
+        stub_responses: {
+          list_buckets: {
+            buckets: [name: 'test']
+          },
+          list_objects: {
+            contents: [{key: 'test'}]
+          },
+          get_object: {
+            body: File.read(File.join(Rails.root, 'spec', 'fixtures', 'sample.csv'))
+          }
+        }
+      }
+    end
+
+    after do
+      Aws.config[:s3] = {}
+    end
 
     context 'when admin' do
       let(:user) do
@@ -68,7 +88,7 @@ RSpec.describe Spree::Admin::ImportsController, type: :controller do
 
       it 'uploads file, enqueues backgroud job, and redirects back' do
         expect(File.open(path).first).to start_with ';name;description;price;' # checking some csv headers
-        expect(Resque).to have_received(:enqueue).with(TestApp::ImportJob, path)
+        expect(Resque).to have_received(:enqueue).with(TestApp::ImportJob, TestApp::Import.last.id)
         expect(response.request.flash[:success]).to eq I18n.t('controllers.admin.imports.success')
         expect(response.status).to eq 302
       end

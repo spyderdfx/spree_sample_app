@@ -7,7 +7,7 @@ module TestApp
   #
   # Examples:
   #
-  #   service = TestApp::ImportSerivce.new('/path/to/file')
+  #   service = TestApp::ImportSerivce.new(Import.first)
   #   service.call
   class ImportService
     COL_SEPARATOR = ';'.freeze
@@ -15,11 +15,11 @@ module TestApp
 
     # Public: initialization
     #
-    # filename - String, path to csv file
+    # import_id - Integer, id of Import with attached csv file
     #
     # Returns ImportService instance
-    def initialize(filename)
-      @filename = filename
+    def initialize(import_id)
+      @import = TestApp::Import.find(import_id)
       @taxons = {}
     end
 
@@ -27,14 +27,12 @@ module TestApp
     #
     # Returns nothing
     def call
-      File.open(@filename, 'r') do |file|
-        csv = CSV.parse(file.read, headers: true, col_sep: COL_SEPARATOR)
+      csv = CSV.parse(Paperclip.io_adapters.for(@import.file).read, headers: true, col_sep: COL_SEPARATOR)
 
-        csv.each do |row|
-          next if row.to_h.values.all?(&:nil?)
+      csv.each do |row|
+        next if row.to_h.values.all?(&:nil?)
 
-          create_product(row)
-        end
+        create_product(row)
       end
     end
 
@@ -47,17 +45,19 @@ module TestApp
     # Returns nothing
     def create_product(row)
       with_handle_errors do
-        product = Spree::Product.new
-        product.assign_attributes(row.to_h.slice(*PRODUCT_ATTRIBUTES))
+        ActiveRecord::Base.transaction do
+          product = Spree::Product.new
+          product.assign_attributes(row.to_h.slice(*PRODUCT_ATTRIBUTES))
 
-        product.taxons << Spree::Taxon.find_or_create_by!(name: row['category'])
-        product.available_on = row['availability_date']
-        product.shipping_category = shipping_category
+          product.taxons << Spree::Taxon.find_or_create_by!(name: row['category'])
+          product.available_on = row['availability_date']
+          product.shipping_category = shipping_category
 
-        product.save!
+          product.save!
 
-        stock_location.stock_item(product.master).count_on_hand = row['stock_total'].to_i
-        stock_location.save!
+          stock_location.stock_item(product.master).count_on_hand = row['stock_total'].to_i
+          stock_location.save!
+        end
       end
     end
 

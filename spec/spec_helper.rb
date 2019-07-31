@@ -8,6 +8,10 @@ require File.expand_path('../../config/environment', __FILE__)
 require 'rspec/rails'
 require 'webmock/rspec'
 
+require 'aws-sdk'
+# Aws.config[:s3] ||= {}
+# Aws.config[:s3].merge!(stub_responses: true)
+
 Dir[
   File.join(File.dirname(__FILE__), 'support', '**', '*.rb')
 ].each { |f| require f }

@@ -1,11 +1,31 @@
 require 'spec_helper'
 
 RSpec.describe TestApp::ImportService do
-  let(:path) { Rails.root.join('spec/fixtures/sample.csv') }
+  let(:import) { create :import }
 
   let!(:default_location) { create(:stock_location, name: 'Default', default: true) }
 
-  let(:service) { described_class.new(path) }
+  let(:service) { described_class.new(import.id) }
+
+  before do
+    Aws.config[:s3] = {
+      stub_responses: {
+        list_buckets: {
+          buckets: [name: 'test']
+        },
+        list_objects: {
+          contents: [{key: 'test'}]
+        },
+        get_object: {
+          body: File.read(File.join(Rails.root, 'spec', 'fixtures', 'sample.csv'))
+        }
+      }
+    }
+  end
+
+  after do
+    Aws.config[:s3] = {}
+  end
 
   describe '#call' do
     it 'parses file and creates products' do
