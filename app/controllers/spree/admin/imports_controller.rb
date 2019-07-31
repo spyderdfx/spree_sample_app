@@ -10,7 +10,7 @@ module Spree
       def upload
         @import = TestApp::Import.create(import_params)
 
-        Resque.enqueue(TestApp::ImportJob, @import.id)
+        TestApp::ImportJob.perform_later(@import.id)
 
         flash[:success] = I18n.t('controllers.admin.imports.success')
         redirect_back fallback_location: root_path

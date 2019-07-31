@@ -1,8 +1,8 @@
 module TestApp
-  class ImportJob
-    @queue = :import
+  class ImportJob < ActiveJob::Base
+    queue_as :import
 
-    def self.perform(import_id)
+    def perform(import_id)
       TestApp::ImportService.new(import_id.to_i).call
     end
   end

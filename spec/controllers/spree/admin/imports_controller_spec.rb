@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 RSpec.describe Spree::Admin::ImportsController, type: :controller do
+  include ActiveJob::TestHelper
+
   describe '#show' do
     let(:request) { get :show }
 
@@ -53,8 +55,6 @@ RSpec.describe Spree::Admin::ImportsController, type: :controller do
     let(:request) { post :upload, params: {import: {file: file}} }
 
     before do
-      allow(Resque).to receive(:enqueue)
-
       Aws.config[:s3] = {
         stub_responses: {
           list_buckets: {
@@ -72,6 +72,9 @@ RSpec.describe Spree::Admin::ImportsController, type: :controller do
 
     after do
       Aws.config[:s3] = {}
+
+      clear_enqueued_jobs
+      clear_performed_jobs
     end
 
     context 'when admin' do
@@ -88,7 +91,7 @@ RSpec.describe Spree::Admin::ImportsController, type: :controller do
 
       it 'uploads file, enqueues backgroud job, and redirects back' do
         expect(File.open(path).first).to start_with ';name;description;price;' # checking some csv headers
-        expect(Resque).to have_received(:enqueue).with(TestApp::ImportJob, TestApp::Import.last.id)
+        expect(ActiveJob::Base.queue_adapter.enqueued_jobs.size).to eq 1 # job enqueued
         expect(response.request.flash[:success]).to eq I18n.t('controllers.admin.imports.success')
         expect(response.status).to eq 302
       end
@@ -105,7 +108,7 @@ RSpec.describe Spree::Admin::ImportsController, type: :controller do
       end
 
       it 'redirects to login page' do
-        expect(Resque).not_to receive(:enqueue)
+        expect(ActiveJob::Base.queue_adapter.enqueued_jobs.size).to eq 0 # job not enqueued
         expect(response.status).to eq 302
       end
     end
@@ -114,7 +117,7 @@ RSpec.describe Spree::Admin::ImportsController, type: :controller do
       before { request }
 
       it 'redirects to login page' do
-        expect(Resque).not_to receive(:enqueue)
+        expect(ActiveJob::Base.queue_adapter.enqueued_jobs.size).to eq 0 # job not enqueued
         expect(response.status).to eq 302
       end
     end

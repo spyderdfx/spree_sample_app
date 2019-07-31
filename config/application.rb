@@ -18,7 +18,7 @@ Bundler.require(*Rails.groups)
 
 module SparkTestTask
   class Application < Rails::Application
-    
+
     config.to_prepare do
       # Load application's model / class decorators
       Dir.glob(File.join(File.dirname(__FILE__), "../app/**/*_decorator*.rb")) do |c|
@@ -52,5 +52,8 @@ module SparkTestTask
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # Using Resque with ActiveJob
+    config.active_job.queue_adapter = :resque
   end
 end
