@@ -25,6 +25,7 @@ RSpec.describe TestApp::ImportService do
 
   after do
     Aws.config[:s3] = {}
+    Thread.current[:paperclip_s3_instances] = {}
   end
 
   describe '#call' do

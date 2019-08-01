@@ -71,6 +71,7 @@ RSpec.describe Spree::Admin::ImportsController, type: :controller do
 
     after do
       Aws.config[:s3] = {}
+      Thread.current[:paperclip_s3_instances] = {}
 
       clear_enqueued_jobs
       clear_performed_jobs
