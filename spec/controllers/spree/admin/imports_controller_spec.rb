@@ -50,7 +50,6 @@ RSpec.describe Spree::Admin::ImportsController, type: :controller do
 
   describe '#upload' do
     let(:file) { fixture_file_upload(Rails.root.join('spec/fixtures/sample.csv')) }
-    let(:path) { Rails.root.join('public', 'files', 'import', 'sample.csv') }
 
     let(:request) { post :upload, params: {import: {file: file}} }
 
@@ -90,7 +89,8 @@ RSpec.describe Spree::Admin::ImportsController, type: :controller do
       end
 
       it 'uploads file, enqueues backgroud job, and redirects back' do
-        expect(File.open(path).first).to start_with ';name;description;price;' # checking some csv headers
+        expect(Paperclip.io_adapters.for(TestApp::Import.last.file).read.split("\r\n").first).
+          to start_with ';name;description;price;' # checking some csv headers
         expect(ActiveJob::Base.queue_adapter.enqueued_jobs.size).to eq 1 # job enqueued
         expect(response.request.flash[:success]).to eq I18n.t('controllers.admin.imports.success')
         expect(response.status).to eq 302
