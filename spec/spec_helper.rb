@@ -7,10 +7,9 @@ require File.expand_path('../../config/environment', __FILE__)
 
 require 'rspec/rails'
 require 'webmock/rspec'
+require 'capybara/rspec'
 
 require 'aws-sdk'
-# Aws.config[:s3] ||= {}
-# Aws.config[:s3].merge!(stub_responses: true)
 
 Dir[
   File.join(File.dirname(__FILE__), 'support', '**', '*.rb')
@@ -27,6 +26,7 @@ Resque.redis = $redis if defined? Resque
 require 'spree/testing_support/authorization_helpers'
 require 'spree/testing_support/factories'
 require 'spree/testing_support/controller_requests'
+require 'spree/testing_support/url_helpers'
 
 RSpec.configure do |config|
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
@@ -42,6 +42,8 @@ RSpec.configure do |config|
   end
 
   config.include Spree::TestingSupport::ControllerRequests, type: :controller
+  config.include Spree::TestingSupport::UrlHelpers
   config.include Devise::TestHelpers, type: :controller
   config.include Warden::Test::Helpers
+  config.include Helpers::Form, type: :feature
 end

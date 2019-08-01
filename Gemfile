@@ -64,6 +64,7 @@ group :test do
   gem 'webmock', '>= 1.9.0'
   gem 'mock_redis', '~> 0.17.3'
   gem 'factory_bot_rails', '~> 4.8'
+  gem 'capybara'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
